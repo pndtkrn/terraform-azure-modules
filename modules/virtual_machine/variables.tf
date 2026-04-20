@@ -19,6 +19,29 @@ variable "nic" {
   }))
 }
 
+variable "create_availability_set" {
+  description = "Set this to true to create an availability set and to false to not create one."
+  type        = bool
+  default     = false
+}
+
+variable "delete_os_disk_on_termination" {
+  description = "Delete os disk on termination"
+  type        = bool
+  default     = false
+}
+
+variable "delete_data_disks_on_termination" {
+  description = "Delete data disk on terminaton"
+  type        = bool
+  default     = false
+}
+
+variable "ssh_public_key" {
+  description = "The SSH public key for VM authentication"
+  type        = string
+}
+
 variable "vm_name" {
   description = "The name of the virtual machine."
   type        = string
@@ -48,15 +71,6 @@ variable "image_version" {
   description = "The version of the image used for the virtual machine."
   type        = string
 }
-variable "image_sku" {
-  description = "The SKU of the image used for the virtual machine."
-  type        = string
-}
-
-variable "image_version" {
-  description = "The version of the image used for the virtual machine."
-  type        = string
-}
 
 variable "storage_os_disk_name" {
   description = "The name of the OS disk."
@@ -66,6 +80,11 @@ variable "storage_os_disk_name" {
 variable "storage_os_disk_caching" {
   description = "The caching type for the OS disk."
   type        = string
+
+  validation {
+    condition     = contains(["None", "ReadOnly", "ReadWrite"], var.storage_os_disk_caching)
+    error_message = "The caching type for the OS disk must be one of 'None', 'ReadOnly', or 'ReadWrite'."
+  }
 }
 
 variable "storage_os_disk_create_option" {

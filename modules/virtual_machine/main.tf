@@ -12,6 +12,7 @@ resource "azurerm_network_interface" "nic" {
 }
 
 resource "azurerm_availability_set" "availability_set" {
+  count                        = var.create_availability_set ? 1 : 0
   name                         = "${var.vm_name}-as"
   location                     = var.location
   resource_group_name          = var.resource_group_name
@@ -27,13 +28,29 @@ resource "azurerm_virtual_machine" "vm" {
   network_interface_ids = [for nic in azurerm_network_interface.nic : nic.id]
   vm_size               = var.vm_size
 
-  availability_set_id = azurerm_availability_set.availability_set.id
+  availability_set_id = var.create_availability_set ? azurerm_availability_set.availability_set[0].id : null
+
+  delete_data_disks_on_termination = var.delete_data_disks_on_termination
+  delete_os_disk_on_termination    = var.delete_os_disk_on_termination
 
   storage_image_reference {
     publisher = var.image_publisher
     offer     = var.image_offer
     sku       = var.image_sku
     version   = var.image_version
+  }
+
+  os_profile {
+    computer_name  = var.vm_name
+    admin_username = "azureuser"
+  }
+
+  os_profile_linux_config {
+    disable_password_authentication = true
+    ssh_keys {
+      path     = "/home/azureuser/.ssh/authorized_keys"
+      key_data = var.ssh_public_key
+    }
   }
 
   storage_os_disk {
