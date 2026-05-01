@@ -7,13 +7,28 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: Terraform
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: '1.9.5'
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+    backendServiceArm: 'terraform'
+    backendAzureRmResourceGroupName: 'rg-sandbox'
+    backendAzureRmStorageAccountName: 'stsandbox8754637487'
+    backendAzureRmContainerName: 'terraformbackend'
+    backendAzureRmKey: 'sandbox/terraform.tfstate'
+
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+    environmentServiceNameAzureRM: 'terraform'
