@@ -43,6 +43,7 @@ resource "azurerm_virtual_machine" "vm" {
   os_profile {
     computer_name  = var.vm_name
     admin_username = "azureuser"
+    custom_data    = var.custom_data_file_path != null ? base64encode(file(var.custom_data_file_path)) : null
   }
 
   os_profile_linux_config {
@@ -50,6 +51,14 @@ resource "azurerm_virtual_machine" "vm" {
     ssh_keys {
       path     = "/home/azureuser/.ssh/authorized_keys"
       key_data = var.ssh_public_key
+    }
+  }
+
+  dynamic "identity" {
+    for_each = var.assign_managed_identity ? [1] : []
+    content {
+      type         = var.identity_type
+      identity_ids = var.identity_ids
     }
   }
 

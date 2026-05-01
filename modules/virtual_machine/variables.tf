@@ -42,6 +42,28 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "assign_managed_identity" {
+  description = "Whether to assign a managed identity to the VM"
+  type        = bool
+  default     = false
+}
+
+variable "identity_type" {
+  description = "The managed identity type assigned to the VM"
+  type        = string
+  default     = "SystemAssigned"
+  validation {
+    condition     = contains(["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.identity_type)
+    error_message = "The identity_type value must be one of 'SystemAssigned', 'UserAssigned', or 'SystemAssigned, UserAssigned'."
+  }
+}
+
+variable "identity_ids" {
+  description = "The list of user assigned identity IDs to assign to the VM. This is required if identity_type is 'UserAssigned' or 'SystemAssigned, UserAssigned'."
+  type        = list(string)
+  default     = []
+}
+
 variable "vm_name" {
   description = "The name of the virtual machine."
   type        = string
@@ -95,4 +117,10 @@ variable "storage_os_disk_create_option" {
 variable "storage_os_disk_managed_disk_type" {
   description = "The managed disk type for the OS disk."
   type        = string
+}
+
+variable "custom_data_file_path" {
+  description = "The path to the custom data file to be added to the VM."
+  type        = string
+  default     = null
 }
