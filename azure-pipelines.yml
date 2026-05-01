@@ -26,7 +26,20 @@ steps:
     backendAzureRmKey: 'sandbox/terraform.tfstate'
 
 - task: TerraformTaskV4@4
+- task: TerraformTaskV4@4
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+    backendServiceArm: 'terraform'
+    backendAzureRmResourceGroupName: 'rg-sandbox'
+    backendAzureRmStorageAccountName: 'stsandbox8754637487'
+    backendAzureRmContainerName: 'terraformbackend'
+    backendAzureRmKey: 'sandbox/terraform.tfstate'
+
+- task: TerraformTaskV4@4
   inputs:
     provider: 'azurerm'
     command: 'plan'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
     environmentServiceNameAzureRM: 'terraform'
