@@ -49,12 +49,12 @@ stages:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-        commandOptions: '-out=$(Pipeline.Workspace)/tfplan'
+        commandOptions: '-out=$(Pipeline.Workspace)/plan/tfplan'
         environmentServiceNameAzureRM: 'terraform'
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)/tfplan'
+        targetPath: '$(Pipeline.Workspace)/plan'
         artifact: 'tfplan'
         publishLocation: 'pipeline'
 
@@ -81,5 +81,5 @@ stages:
               provider: 'azurerm'
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-              commandOptions: '$(Pipeline.Workspace)/artifacts/tfplan'
+              commandOptions: '$(Pipeline.Workspace)/artifacts/tfplan/tfplan'
               environmentServiceNameAzureRM: 'terraform'
