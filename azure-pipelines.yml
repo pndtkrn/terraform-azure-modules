@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -10,16 +5,24 @@ pool:
   name: Terraform
 
 stages:
+
+# ---------------- PLAN ----------------
 - stage: Plan
   jobs:
   - job: TerraformPlan
+    displayName: "Terraform Plan"
     steps:
+
     - checkout: self
 
     - task: TerraformInstaller@1
       displayName: "Terraform Install"
       inputs:
         terraformVersion: '1.9.5'
+
+    - script: terraform fmt -check
+      displayName: "Terraform Format Check"
+      workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
 
     - task: TerraformTaskV4@4
       displayName: "Terraform Init"
@@ -34,18 +37,45 @@ stages:
         backendAzureRmKey: 'sandbox/terraform.tfstate'
 
     - task: TerraformTaskV4@4
+      displayName: "Terraform Validate"
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+
+    - task: TerraformTaskV4@4
       displayName: "Terraform Plan"
       inputs:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+        commandOptions: '-out=$(Pipeline.Workspace)/tfplan'
         environmentServiceNameAzureRM: 'terraform'
 
-    - task: TerraformTaskV4@4
-      displayName: "Terraform Apply"
-      inputs:
-        provider: 'azurerm'
-        command: 'apply'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-        commandOptions: '-auto-approve'
-        environmentServiceNameAzureRM: 'terraform'
+    - publish: $(Pipeline.Workspace)/tfplan
+      artifact: tfplan
+      displayName: "Publish tfplan"
+
+
+# ---------------- APPLY ----------------
+- stage: Apply
+  dependsOn: Plan
+  jobs:
+  - deployment: TerraformApply
+    environment: sandbox
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - download: current
+            artifact: tfplan
+
+          - task: TerraformTaskV4@4
+            displayName: "Terraform Apply"
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+              commandOptions: '$(Pipeline.Workspace)/tfplan'
+              environmentServiceNameAzureRM: 'terraform'
