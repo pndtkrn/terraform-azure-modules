@@ -75,11 +75,16 @@ stages:
               artifactName: 'terraformplan'
               targetPath: '$(Pipeline.Workspace)/artifacts'
 
+          - task: TerraformInstaller@1
+            displayName: "Terraform Install"
+            inputs:
+              terraformVersion: '1.9.5'
+
           - task: TerraformTaskV4@4
             displayName: "Terraform Apply"
             inputs:
               provider: 'azurerm'
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-              commandOptions: '$(Pipeline.Workspace)/artifacts/terraformplan'
+              commandOptions: '$(Pipeline.Workspace)/artifacts/tfplan'
               environmentServiceNameAzureRM: 'terraform'
