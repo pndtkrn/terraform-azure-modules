@@ -52,7 +52,17 @@ stages:
         commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
         environmentServiceNameAzureRM: 'terraform'
 
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'show'
+        commandOptions: '$(Pipeline.Workspace)/tfplan'
+        outputTo: 'console'
+        outputFormat: 'default'
+        environmentServiceNameAzureRM: 'terraform'
+
     - task: PublishPipelineArtifact@1
+      displayName: "Upload Terraform Plan"
       inputs:
         targetPath: '$(Pipeline.Workspace)/tfplan'
         artifact: 'terraformplan'
@@ -70,6 +80,7 @@ stages:
           steps:
 
           - task: DownloadPipelineArtifact@2
+            displayName: "Download Terraform Plan"
             inputs:
               buildType: 'current'
               artifactName: 'terraformplan'
