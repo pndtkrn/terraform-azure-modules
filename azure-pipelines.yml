@@ -49,14 +49,14 @@ stages:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-        commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
+        commandOptions: '-out=$(System.DefaultWorkingDirectory)/tfplan -detailed-exitcode'
         environmentServiceNameAzureRM: 'terraform'
 
     - task: TerraformTaskV4@4
       inputs:
         provider: 'azurerm'
         command: 'show'
-        commandOptions: '$(Pipeline.Workspace)/tfplan'
+        commandOptions: '$(System.DefaultWorkingDirectory)/tfplan'
         outputTo: 'console'
         outputFormat: 'default'
         environmentServiceNameAzureRM: 'terraform'
@@ -64,7 +64,7 @@ stages:
     - task: PublishPipelineArtifact@1
       displayName: "Upload Terraform Plan"
       inputs:
-        targetPath: '$(Pipeline.Workspace)/tfplan'
+        targetPath: '$(System.DefaultWorkingDirectory)/tfplan'
         artifact: 'terraformplan'
         publishLocation: 'pipeline'
 
@@ -84,7 +84,7 @@ stages:
             inputs:
               buildType: 'current'
               artifactName: 'terraformplan'
-              targetPath: '$(Pipeline.Workspace)/artifacts'
+              targetPath: '$(System.DefaultWorkingDirectory)/artifacts'
 
           - task: TerraformInstaller@1
             displayName: "Terraform Install"
@@ -97,5 +97,5 @@ stages:
               provider: 'azurerm'
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-              commandOptions: '$(Pipeline.Workspace)/artifacts/tfplan'
+              commandOptions: '$(System.DefaultWorkingDirectory)/artifacts/tfplan'
               environmentServiceNameAzureRM: 'terraform'
