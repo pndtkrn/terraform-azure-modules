@@ -60,6 +60,8 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: 'echo "Logged into Azure"'
+      env:
+        ARM_USE_MSI: false
 
     - bash: |
         terraform plan -out=$(Pipeline.Workspace)/tfplan -detailed-exitcode
