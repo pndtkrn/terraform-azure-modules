@@ -43,14 +43,31 @@ stages:
         command: 'validate'
         workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
 
-    - task: TerraformTaskV4@4
-      displayName: "Terraform Plan"
-      inputs:
-        provider: 'azurerm'
-        command: 'plan'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-        commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
-        environmentServiceNameAzureRM: 'terraform'
+    # - task: TerraformTaskV4@4
+    #   displayName: "Terraform Plan"
+    #   name: planStep
+    #   inputs:
+    #     provider: 'azurerm'
+    #     command: 'plan'
+    #     workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
+    #     commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
+    #     environmentServiceNameAzureRM: 'terraform'
+
+    - bash: |
+        terraform plan -out=$(Pipeline.Workspace)/tfplan -detailed-exitcode
+        EXIT_CODE=$?
+
+        echo "Exit code: $EXIT_CODE"
+
+        if [ $EXIT_CODE -eq 1 ]; then
+          echo "Terraform plan failed"
+          exit 1
+        fi
+
+        echo "##vso[task.setvariable variable=tfPlanExitCode;isOutput=true]$EXIT_CODE"
+      name: planStep
+      displayName: "Terraform Plan (with exit code)"
+      workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
 
     - task: TerraformTaskV4@4
       displayName: "Terraform Show tfplan"
@@ -73,6 +90,7 @@ stages:
 # ---------------- APPLY ----------------
 - stage: Apply
   dependsOn: Plan
+  condition: eq(dependencies.Plan.outputs['TerraformPlan.planStep.tfPlanExitCode'], '2')
   jobs:
   - deployment: TerraformApply
     environment: sandbox
