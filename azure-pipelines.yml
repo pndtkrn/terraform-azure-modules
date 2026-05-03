@@ -49,7 +49,7 @@ stages:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
-        commandOptions: '-out=$(Pipeline.Workspace)/tfplan'
+        commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
         environmentServiceNameAzureRM: 'terraform'
 
     - task: PublishPipelineArtifact@1
