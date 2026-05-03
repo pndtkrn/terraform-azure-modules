@@ -53,6 +53,14 @@ stages:
     #     commandOptions: '-out=$(Pipeline.Workspace)/tfplan -detailed-exitcode'
     #     environmentServiceNameAzureRM: 'terraform'
 
+    - task: AzureCLI@3
+      inputs:
+        connectionType: 'azureRM'
+        azureSubscription: 'terraform'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'echo "Logged into Azure"'
+
     - bash: |
         terraform plan -out=$(Pipeline.Workspace)/tfplan -detailed-exitcode
         EXIT_CODE=$?
