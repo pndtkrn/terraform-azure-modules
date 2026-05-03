@@ -57,6 +57,7 @@ stages:
       inputs:
         provider: 'azurerm'
         command: 'show'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/sandbox'
         commandOptions: '$(System.DefaultWorkingDirectory)/sandbox/tfplan'
         outputTo: 'console'
         outputFormat: 'default'
